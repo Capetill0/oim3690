@@ -13,6 +13,5 @@ This is my course repository for OIM3690.
 - Is it possible to have different colors in the background so that it's not a solid color?
 - What does "max-width" control?
 - What does "box-shadow" actually do?
-- 
 - What’s the difference between"h1" and "h2"?
-Also what does "h1/h2" do?
+- Also what does "h1/h2" do?
