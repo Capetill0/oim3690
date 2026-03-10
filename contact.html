@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>Contact</title>
+		<link rel="stylesheet" href="css/contact.css">
+	</head>
+	<body>
+		<main class="contact-page">
+			<section class="contact-card">
+				<h1>Contact Me</h1>
+				<p class="lead">Have a question or want to work together? Send a message below.</p>
+				<form class="contact-form" action="#" method="post" novalidate>
+					<div class="field-row">
+						<label for="name">Name</label>
+						<input id="name" name="name" type="text" placeholder="Your name" required>
+					</div>
+
+					<div class="field-row">
+						<label for="email">Email</label>
+						<input id="email" name="email" type="email" placeholder="you@example.com" required>
+					</div>
+
+					<div class="field-row">
+						<label for="subject">Subject</label>
+						<input id="subject" name="subject" type="text" placeholder="Brief subject">
+					</div>
+
+					<div class="field-row">
+						<label for="message">Message</label>
+						<textarea id="message" name="message" rows="6" placeholder="Write your message here..." required></textarea>
+					</div>
+
+					<div class="actions">
+						<button type="submit" class="btn-primary">Send Message</button>
+					</div>
+				</form>
+			</section>
+		</main>
+	</body>
+</html>
+
