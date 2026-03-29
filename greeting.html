@@ -1,0 +1,24 @@
+<html class=":5">
+    <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JavaScript Basics - Demo</title>    
+    </head>
+<body>
+    <h1>Hello, World! </h1>
+
+    <input id = "name" type="text" />
+    <button>Greet</button><button><p></p><p>
+        <script>
+
+            const name = document.querySelector('#name')
+            const button = document.querySelector('button')
+            const p = document.querySelector('p');
+
+            button.addEventListener('click', function() {
+                p.textContent = `Hello, ${name.value}!`;
+            })
+        </script>
+    </p></p></button></button>
+</body>
+</html>

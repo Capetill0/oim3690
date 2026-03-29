@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simple Todo App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#dbeeff}
+    html,body{height:100%;margin:0;font-family:'Baloo 2',Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:#111}
+    .wrap{min-height:100%;display:flex;align-items:flex-start;justify-content:center;padding:36px}
+    .board{width:100%;max-width:980px}
+    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .card{background:transparent}
+    h1{margin:0;font-size:36px;line-height:1;color:#3a2b6a;padding:10px 16px;border-radius:14px;background:linear-gradient(90deg,#fff9fb,#fffdf5);box-shadow:0 10px 24px rgba(16,24,40,0.06);display:inline-block}
+    .title-emoji{margin-right:8px}
+    .subtitle{display:block;font-size:13px;color:#5b6280;margin-top:6px;font-weight:600}
+
+    .controls-row{display:flex;gap:8px;align-items:center}
+    .input-row{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+    textarea#taskInput{flex:1;padding:14px 16px;border:1px solid rgba(0,0,0,0.06);border-radius:14px;font-size:16px;background:rgba(255,255,255,0.98);box-shadow:inset 0 2px 6px rgba(0,0,0,0.03);min-height:72px;resize:vertical}
+    textarea#taskInput::placeholder{color:#9aa0b4}
+    select{padding:9px 10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+    button{background:#2b2fef;color:white;border:none;padding:10px 12px;border-radius:8px;cursor:pointer}
+    #addBtn{background:linear-gradient(180deg,#7b65ff,#5b46ff);padding:12px 16px;border-radius:14px;font-weight:700}
+
+    /* sticky notes grid */
+    .notes{display:flex;flex-wrap:wrap;gap:16px}
+    .note{width:200px;min-height:110px;padding:14px 14px 16px;border-radius:12px;box-shadow:0 12px 30px rgba(16,24,40,0.08);position:relative;transform-origin:center;display:flex;flex-direction:column;gap:8px;font-family:'Baloo 2',Inter,Segoe UI,Arial,sans-serif}
+    .note .text{flex:1;word-wrap:break-word;white-space:pre-wrap}
+    .note .text ul{margin:6px 0 0 16px;padding-left:14px}
+    .note .text li{margin-bottom:6px}
+    .note .meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .note .cat{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,0.06);font-weight:700}
+    .note .actions{display:flex;gap:6px}
+    .small-btn{background:rgba(255,255,255,0.6);border:none;padding:6px 8px;border-radius:8px;cursor:pointer}
+
+    /* pastel category colors */
+    .cat-grocery{background:#ffd6e0;color:#8a2b2b}
+    .cat-budget{background:#e6f7ff;color:#0b66a6}
+    .cat-bucket{background:#fff3bf;color:#6b4f00}
+    .cat-regular{background:#e6ffe6;color:#1b6b2a}
+    .cat-work{background:#e8e9ff;color:#2b2fef}
+
+    /* done state */
+    .done{opacity:0.6;text-decoration:line-through}
+
+    /* particle / glitter effect */
+    .particle-container{position:fixed;pointer-events:none;left:0;top:0;width:0;height:0;z-index:9999}
+    .particle{position:absolute;width:10px;height:10px;border-radius:50%;opacity:1;will-change:transform,opacity}
+    @keyframes particleMove{to{transform:translate(var(--dx),var(--dy)) scale(0.3);opacity:0}}
+    .shrink-out{animation:shrinkAnim 680ms cubic-bezier(.2,.8,.2,1) forwards}
+    @keyframes shrinkAnim{to{transform:scale(.2) rotate(-10deg);opacity:0}}
+
+    /* responsive */
+    @media (max-width:640px){.note{width:calc(50% - 12px)}}
+    @media (max-width:420px){.notes{gap:12px}.note{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="Todo application">
+      <h1><span class="title-emoji">✨</span> Todos <span class="subtitle">tiny, pastel & sticky</span></h1>
+      <div class="card">
+        <div class="input-row">
+          <textarea id="taskInput" rows="4" placeholder="Add a new task (use multiple lines for lists). Submit with Ctrl/Cmd+Enter" aria-label="New task"></textarea>
+          <select id="categorySelect" aria-label="Select category">
+            <option value="regular">Regular</option>
+            <option value="grocery">Grocery</option>
+            <option value="budget">Budget</option>
+            <option value="bucket">Bucket List</option>
+            <option value="work">Work</option>
+          </select>
+          <button id="addBtn">Add</button>
+        </div>
+
+        <div class="header">
+          <div class="controls-row">
+            <select id="filterSelect" aria-label="Filter category">
+              <option value="all">All</option>
+              <option value="regular">Regular</option>
+              <option value="grocery">Grocery</option>
+              <option value="budget">Budget</option>
+              <option value="bucket">Bucket List</option>
+              <option value="work">Work</option>
+            </select>
+            <div id="counts" class="muted">0 tasks</div>
+          </div>
+          <div>
+            <button id="clearCompleted" class="small-btn">Clear completed</button>
+            <button id="clearAll" class="small-btn">Clear all</button>
+          </div>
+        </div>
+
+        <div class="notes" id="board" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const STORAGE_KEY = 'simple_todos_v2'
+      const input = document.getElementById('taskInput')
+      const addBtn = document.getElementById('addBtn')
+      const board = document.getElementById('board')
+      const counts = document.getElementById('counts')
+      const clearCompleted = document.getElementById('clearCompleted')
+      const clearAll = document.getElementById('clearAll')
+      const categorySelect = document.getElementById('categorySelect')
+      const filterSelect = document.getElementById('filterSelect')
+
+      const categories = {
+        regular: {label: 'Regular', css: 'cat-regular'},
+        grocery: {label: 'Grocery', css: 'cat-grocery'},
+        budget: {label: 'Budget', css: 'cat-budget'},
+        bucket: {label: 'Bucket', css: 'cat-bucket'},
+        work: {label: 'Work', css: 'cat-work'}
+      }
+
+      const PALETTE = ['#ffd6e0','#e6f7ff','#fff3bf','#e6ffe6','#e8e9ff','#fde2e2','#f1e6ff','#ffe8d6','#e7fffa']
+
+      function getNextPaletteColor(){
+        try{
+          const key = 'note_color_index_v1'
+          let idx = parseInt(localStorage.getItem(key) || '0', 10)
+          const color = PALETTE[idx % PALETTE.length]
+          idx = (idx + 1) % PALETTE.length
+          localStorage.setItem(key, String(idx))
+          return color
+        }catch(e){ return PALETTE[Math.floor(Math.random()*PALETTE.length)] }
+      }
+
+      let todos = []
+
+      function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(todos)) }
+      function load(){ try{ todos = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [] }catch(e){ todos = [] } }
+
+      function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8) }
+
+      const PARTICLE_COLORS = ['#fff7c0','#ffd6e0','#f1e6ff','#e6f7ff','#ffe8d6','#e7fffa','#fff5f0']
+
+      function playParticlesAtRect(rect, count = 20){
+        const container = document.createElement('div')
+        container.className = 'particle-container'
+        document.body.appendChild(container)
+
+        for(let i=0;i<count;i++){
+          const p = document.createElement('div')
+          p.className = 'particle'
+          p.style.background = PARTICLE_COLORS[i % PARTICLE_COLORS.length]
+          // random start inside rect
+          const sx = rect.left + Math.random() * rect.width
+          const sy = rect.top + Math.random() * rect.height
+          p.style.left = sx + 'px'
+          p.style.top = sy + 'px'
+          const dx = (Math.random() * 300 - 150).toFixed(2) + 'px'
+          const dy = (-(Math.random() * 250) - 30).toFixed(2) + 'px'
+          p.style.setProperty('--dx', dx)
+          p.style.setProperty('--dy', dy)
+          p.style.animation = `particleMove ${600 + Math.floor(Math.random()*400)}ms cubic-bezier(.2,.8,.2,1) forwards`
+          container.appendChild(p)
+        }
+
+        // cleanup
+        setTimeout(()=>{ try{ container.remove() }catch(e){} }, 1200)
+      }
+
+      function removeNoteWithSparkle(t, el){
+        // visually shrink note and spawn particles, then remove from data and re-render
+        if(el) el.classList.add('shrink-out')
+        const rect = el.getBoundingClientRect()
+        playParticlesAtRect(rect, 22)
+        // wait for animation to mostly finish before removing
+        setTimeout(()=>{
+          todos = todos.filter(x=>x.id !== t.id)
+          save()
+          render()
+        }, 620)
+      }
+
+      function hexToLuminance(hex){
+        if(!hex) return 1
+        hex = hex.replace('#','')
+        if(hex.length === 3) hex = hex.split('').map(c=>c+c).join('')
+        const r = parseInt(hex.substr(0,2),16)/255
+        const g = parseInt(hex.substr(2,2),16)/255
+        const b = parseInt(hex.substr(4,2),16)/255
+        // relative luminance
+        const a = [r,g,b].map(v => v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4))
+        return 0.2126*a[0] + 0.7152*a[1] + 0.0722*a[2]
+      }
+
+      function getContrastText(hex){
+        const lum = hexToLuminance(hex||'#ffffff')
+        // if background is light, use dark text, else white
+        return lum > 0.6 ? '#222' : '#fff'
+      }
+
+      function createNoteElement(t){
+        const el = document.createElement('div')
+        el.className = 'note' + (t.done? ' done':'')
+        // apply color from task (fallback to palette)
+        const bg = t.color || getNextPaletteColor()
+        el.style.background = bg
+        el.dataset.id = t.id
+        // ensure readable text color
+        const textColor = getContrastText(bg)
+        el.style.color = textColor
+        // random tilt for sticky feel
+        const tilt = (Math.random()*12-6).toFixed(2)
+        el.style.transform = `rotate(${tilt}deg)`
+
+        const txt = document.createElement('div')
+        txt.className = 'text'
+        // render multiline input as a bullet list when multiple non-empty lines exist
+        const lines = (t.text||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean)
+        if(lines.length > 1){
+          const ul = document.createElement('ul')
+          lines.forEach(line => {
+            const li = document.createElement('li')
+            // strip common bullet markers
+            li.textContent = line.replace(/^[-*\u2022\s]+/, '')
+            ul.appendChild(li)
+          })
+          txt.appendChild(ul)
+        } else {
+          txt.textContent = t.text
+        }
+
+        const meta = document.createElement('div')
+        meta.className = 'meta'
+
+        const cat = document.createElement('div')
+        cat.className = 'cat'
+        cat.textContent = categories[t.category]?.label || 'Other'
+
+        const actions = document.createElement('div')
+        actions.className = 'actions'
+
+        const chk = document.createElement('input')
+        chk.type = 'checkbox'
+        chk.checked = !!t.done
+        chk.addEventListener('change', ()=>{
+          if(chk.checked){
+            // play sparkle and remove note
+            removeNoteWithSparkle(t, el)
+          } else {
+            t.done = false
+            save()
+            render()
+          }
+        })
+
+        const del = document.createElement('button')
+        del.className = 'small-btn'
+        del.textContent = 'Delete'
+        del.addEventListener('click', ()=>{ removeNoteWithSparkle(t, el) })
+
+        actions.appendChild(chk)
+        actions.appendChild(del)
+
+        meta.appendChild(cat)
+        meta.appendChild(actions)
+
+        el.appendChild(txt)
+        el.appendChild(meta)
+        return el
+      }
+
+      function render(){
+        const filter = filterSelect.value
+        board.innerHTML = ''
+        const visible = todos.filter(t => filter === 'all' ? true : t.category === filter)
+        if(!visible.length){ counts.textContent = 'No tasks yet' ; return }
+
+        // ensure existing todos have a color
+        let changed = false
+        todos.forEach(t=>{ if(!t.color){ t.color = getNextPaletteColor(); changed = true } })
+        if(changed) save()
+
+        visible.forEach(t => board.appendChild(createNoteElement(t)))
+
+        const total = todos.length
+        const done = todos.filter(t=>t.done).length
+        counts.textContent = `${total} task${total!==1?'s':''} — ${done} completed`
+      }
+
+      function addTask(text, category){
+        const trimmed = (text||'').trim()
+        if(!trimmed) return
+        const color = getNextPaletteColor()
+        todos.unshift({id:uid(), text:trimmed, done:false, category:category||'regular', color})
+        save()
+        render()
+      }
+
+      addBtn.addEventListener('click', ()=>{ addTask(input.value, categorySelect.value); input.value=''; input.focus() })
+      // Submit with Ctrl+Enter or Cmd+Enter. Plain Enter inserts newline.
+      input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { addTask(input.value, categorySelect.value); input.value=''; } })
+      filterSelect.addEventListener('change', render)
+
+      clearCompleted.addEventListener('click', ()=>{
+        const completed = todos.filter(t=>t.done)
+        if(!completed.length) return
+        // animate each completed note, if element exists
+        completed.forEach(t => {
+          const el = board.querySelector(`[data-id="${t.id}"]`)
+          if(el) removeNoteWithSparkle(t, el)
+          else { todos = todos.filter(x=>x.id!==t.id); save(); render(); }
+        })
+      })
+
+      clearAll.addEventListener('click', ()=>{
+        if(!confirm('Clear all tasks?')) return
+        const copy = todos.slice()
+        copy.forEach(t => {
+          const el = board.querySelector(`[data-id="${t.id}"]`)
+          if(el) removeNoteWithSparkle(t, el)
+          else { todos = todos.filter(x=>x.id!==t.id); }
+        })
+      })
+
+      // Initialize
+      load(); render();
+    })()
+  </script>
+</body>
+</html>

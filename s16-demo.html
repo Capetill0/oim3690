@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Play with JS</h1>
+    <button> Click Me!</button>
+    <p>
+        hi hello goodbye world
+    </p>
+    <p id="message">
+        This is a message that will change when you click the button.
+    </p>
+    <script>
+        document.querySelector("button").addEventListener("click", function () {
+            document.querySelector("h1").textContent = 
+            "Heading Clicked";
+            document.querySelector("h1").style.color = "blue";
+            console.log("Button Clicked!");
+        });
+    </script>
+</body>
+</html>
