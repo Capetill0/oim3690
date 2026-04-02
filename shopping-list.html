@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Shopping List Builder</title>
+	<style>body{font-family:system-ui,Segoe UI,Arial;margin:20px}input{margin-right:8px}</style>
+</head>
+<body>
+	<h1>Shopping List</h1>
+	<input id="itemInput" placeholder="Add item">
+	<button id="addBtn">Add</button>
+	<ul id="list"></ul>
+
+	<script>
+		// Start with an array
+		const items = ['Milk', 'Eggs', 'Bread'];
+
+		const ul = document.getElementById('list');
+		const input = document.getElementById('itemInput');
+		const btn = document.getElementById('addBtn');
+
+		// Render the list from the array using a loop
+		function render() {
+			ul.innerHTML = '';
+			for (let i = 0; i < items.length; i++) {
+				const li = document.createElement('li');
+				li.textContent = items[i];
+				ul.appendChild(li);
+			}
+		}
+
+		// Add button adds the input value to the array and re-renders
+		btn.onclick = function() {
+			const value = input.value.trim();
+			if (value === '') return;
+			items.push(value);
+			input.value = '';
+			render();
+		};
+
+		render();
+	</script>
+</body>
+</html>

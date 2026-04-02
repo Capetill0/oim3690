@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grade Calculator</title>
+  </head> 
+  <body>
+    <main>
+      <h1>Grade Calculator</h1>
+      <label for="score">Score:</label>
+      <input id="score" type="number" min="0" max="100" />
+      <button id="calcBtn">Get Grade</button>
+      <p id="result" aria-live="polite"></p>
+    </main>
+
+    <script>
+      function getGrade(score) {
+        if (score >= 90) return "A";
+        else if (score >= 80) return "B";
+        else if (score >= 70) return "C";
+        else if (score >= 60) return "D";
+        else return "F";
+      }
+
+      document.getElementById('calcBtn').addEventListener('click', function () {
+        const input = document.getElementById('score');
+        const value = Number(input.value);
+        const resultEl = document.getElementById('result');
+        if (Number.isNaN(value)) {
+          resultEl.textContent = 'Please enter a valid number.';
+          return;
+        }
+        resultEl.textContent = 'Grade: ' + getGrade(value);
+      });
+    </script>
+  </body>
+</html>
+  
