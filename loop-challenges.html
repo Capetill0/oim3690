@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Loop Challenges</title>
+  <style>
+    // background color
+    body{font-family:system-ui,Segoe UI,Arial;margin:20px;background:#fff9c4}
+    ul{padding-left:20px}
+  </style>
+</head>
+<body>
+  <h1>Loop Challenges</h1>
+
+  <h2>Numbers</h2>
+  <ul id="numbers-list"></ul>
+
+  <h2>Results</h2>
+  <p><strong>Sum:</strong> <span id="sum"></span></p>
+  <p><strong>Max:</strong> <span id="max"></span></p>
+  <p><strong>Positive count:</strong> <span id="posCount"></span></p>
+  <p><strong>Even numbers:</strong> <span id="evens"></span></p>
+
+  <script>
+    // Use this array for all challenges
+    const numbers = [4, -8, 15, -16, 23, 42, -3];
+
+    // 1) Build a list: create <li> for each number
+    const ul = document.getElementById('numbers-list');
+    for (let i = 0; i < numbers.length; i++) {
+      const li = document.createElement('li');
+      li.textContent = numbers[i];
+      ul.appendChild(li);
+    }
+
+    // 2) Sum it up
+    let total = 0;
+    for (let i = 0; i < numbers.length; i++) {
+      total += numbers[i];
+    }
+    document.getElementById('sum').textContent = total;
+
+    // 3) Find the max (no Math.max)
+    let max = numbers[0];
+    for (let i = 1; i < numbers.length; i++) {
+      if (numbers[i] > max) {
+        max = numbers[i];
+      }
+    }
+    document.getElementById('max').textContent = max;
+
+    // 4) Count positives (> 0)
+    let posCount = 0;
+    for (let i = 0; i < numbers.length; i++) {
+      if (numbers[i] > 0) {
+        posCount++;
+      }
+    }
+    document.getElementById('posCount').textContent = posCount;
+
+    // 5) Find evens: collect into a new array
+    const evens = [];
+    for (let i = 0; i < numbers.length; i++) {
+      if (numbers[i] % 2 === 0) {
+        evens.push(numbers[i]);
+      }
+    }
+    document.getElementById('evens').textContent = evens.join(', ');
+  </script>
+</body>
+</html>

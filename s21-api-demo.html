@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button>Click</button>
+    <p id = "result"></p>
+
+    <script>
+        const btn = document.querySelector('button');
+        const result = document.querySelector('#result');
+
+        function appendLine(text) {
+            result.innerHTML += `<p>${text}</p>`;
+        }
+
+        async function getRandomWord() {
+            try {
+                const response = await fetch('https://oim.108122.xyz/words/random');
+                const data = await response.json();
+            
+                appendLine(JSON.stringify(data));
+                const text = (typeof data === 'string') ? data : (data.word || data.name || JSON.stringify(data));
+                appendLine(text);
+            } catch (err) {
+                appendLine('Error fetching word: ' + err.message);
+            }
+        }
+
+        async function postMessage(text) {
+            try {
+                const response = await fetch('https://oim.108122.xyz/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Token': 'isabelisabel' 
+                    },
+                    body: JSON.stringify({ message: text })
+                });
+                const res = await response.json();
+                appendLine('POST result: ' + JSON.stringify(res));
+            } catch (err) {
+                appendLine('Error posting message: ' + err.message);
+            }
+        }
+
+        postMessage('Hello from Isabel!');
+
+async function showTowns() {
+    try {
+        const response = await fetch('https://oim.108122.xyz/mass', {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Token': 'isabelisabel' 
+            }
+        });
+
+        const data = await response.json();
+
+        appendLine(data.name);      // 'Massachusetts'
+        appendLine(data.governor);  // 'Maura Healey'
+
+        for (const town of data.data) {
+            appendLine(`${town.name}: pop ${town.population}`);
+        }
+    } catch (err) {
+        appendLine('Error fetching towns: ' + err.message);
+    }
+}
+
+
+function showStuff() {
+    result.innerHTML += "<p>Hello, World!</p>";
+}
+
+        btn.addEventListener('click', () => {
+        //    getRandomWord();
+         //   showStuff();
+            showTowns();
+        });
+    </script>
+</body>
+</html>
