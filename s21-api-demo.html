@@ -9,6 +9,7 @@
     <button>Click</button>
     <p id = "result"></p>
 
+    <script src = "js/config.js"></script>
     <script>
         const btn = document.querySelector('button');
         const result = document.querySelector('#result');
@@ -36,7 +37,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Token': 'isabelisabel' 
+                        'X-Token': OIM_TOKEN
                     },
                     body: JSON.stringify({ message: text })
                 });
